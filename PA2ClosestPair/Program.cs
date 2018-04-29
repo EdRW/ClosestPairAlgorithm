@@ -42,6 +42,7 @@ namespace PA2ClosestPair
                 Debug.WriteLine(point);
             }
 
+            ClosestPair(xSorted, ySorted);
 
             // Keep the console window open in debug mode.
             //Console.WriteLine("Press any key to exit.");
@@ -51,6 +52,8 @@ namespace PA2ClosestPair
         public static Pair ClosestPair(List<Point> xSorted, List<Point> ySorted)
         {
             Pair closestPair = null;
+
+            // Base case. This step takes O(1) time.
             if (xSorted.Count <= 3)
             {
                 double d1 = xSorted[0].Distance(xSorted[1]);
@@ -76,7 +79,31 @@ namespace PA2ClosestPair
             }
             else
             {
+                int verticalLineIndex = xSorted.Count / 2;
+                int verticalLineValue = xSorted[verticalLineIndex].x;
 
+                List<Point> xSortedL = new List<Point>(xSorted.GetRange(0, verticalLineIndex));
+                List<Point> xSortedR = new List<Point>(xSorted.GetRange(verticalLineIndex, xSorted.Count - verticalLineIndex));
+
+                List<Point> ySortedL = new List<Point>();
+                List<Point> ySortedR = new List<Point>();
+
+                for (int i = 0; i < ySorted.Count; i++)
+                {
+                    if (ySorted[i].x < verticalLineValue)
+                    {
+                        ySortedL.Add(ySorted[i]);
+                    }
+                    else
+                    {
+                        ySortedR.Add(ySorted[i]);
+                    }
+                }
+
+                Debug.Assert(xSortedL.Count == ySortedL.Count);
+                Debug.Assert(xSortedR.Count == ySortedR.Count);
+                //Pair leftClosestPair = ClosestPair(xSortedL, ySortedL);
+                //Pair rightClosestPair = ClosestPair(xSortedR, ySortedR);
             }
 
             return closestPair;
