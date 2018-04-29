@@ -57,5 +57,24 @@ namespace PA2ClosestPair
             this.pointB = pointB;
             this.distance = distance;
         }
+
+        public Pair(Pair pair)
+        {
+            this.pointA = pair.pointA;
+            this.pointB = pair.pointB;
+            this.distance = pair.distance;
+        }
+
+        public void Set(Point pointA, Point pointB, double distance)
+        {
+            this.pointA = pointA;
+            this.pointB = pointB;
+            this.distance = distance;
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}: ({1}, {2})<--->({3}, {4})", distance, pointA.x, pointA.y, pointB.x, pointB.y);
+        }
     }
 }

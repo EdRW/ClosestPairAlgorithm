@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,43 +9,39 @@ namespace PA2ClosestPair
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            String[] fileNames = { "10points.txt", "100points.txt", "1000points.txt" };
 
-            StreamReader file = new StreamReader("10points.txt");
-
-            List<Point> points = new List<Point>();
-
-            string line = null;
-            while ((line = file.ReadLine()) != null)
+            foreach (String fileName in fileNames)
             {
-                String[] words = line.Split(" ");
-                Point newPoint = new Point(int.Parse(words[0]), int.Parse(words[1]));
-                points.Add(newPoint);
-                //Debug.WriteLine(line);
+                StreamReader file = new StreamReader(fileName);
+
+                List<Point> points = new List<Point>();
+
+                string line = null;
+                while ((line = file.ReadLine()) != null)
+                {
+                    String[] words = line.Split(" ");
+                    Point newPoint = new Point(int.Parse(words[0]), int.Parse(words[1]));
+                    points.Add(newPoint);
+                    //Debug.WriteLine(line);
+                }
+
+                file.Close();
+
+                Debug.WriteLine("{0} points test file:\n", points.Count);
+
+                List<Point> xSorted = points;
+                List<Point> ySorted = new List<Point>(points);
+                ySorted.Sort(new CompareY());
+                xSorted.Sort(new CompareX());
+
+                Pair closestPair = ClosestPair(xSorted, ySorted);
+
+                Debug.WriteLine("The minimum distance is:\n{0}\n", closestPair);
+                // Keep the console window open in debug mode.
+                //Console.WriteLine("Press any key to exit.");
+                //Console.ReadKey();
             }
-
-            List<Point> xSorted = points;
-            List<Point> ySorted = new List<Point>(points);
-            ySorted.Sort(new CompareY());
-            xSorted.Sort(new CompareX());
-
-            Debug.WriteLine("Sorted by Y:");
-            foreach (Point point in ySorted)
-            {
-                Debug.WriteLine(point);
-            }
-
-            Debug.WriteLine("Sorted by X:");
-            foreach (Point point in xSorted)
-            {
-                Debug.WriteLine(point);
-            }
-
-            ClosestPair(xSorted, ySorted);
-
-            // Keep the console window open in debug mode.
-            //Console.WriteLine("Press any key to exit.");
-            //Console.ReadKey();
         }
 
         public static Pair ClosestPair(List<Point> xSorted, List<Point> ySorted)
@@ -54,7 +49,13 @@ namespace PA2ClosestPair
             Pair closestPair = null;
 
             // Base case. This step takes O(1) time.
-            if (xSorted.Count <= 3)
+            if (xSorted.Count == 2)
+            {
+                double d1 = xSorted[0].Distance(xSorted[1]);
+
+                closestPair = new Pair(xSorted[0], xSorted[1], d1);
+            }
+            else if (xSorted.Count == 3)
             {
                 double d1 = xSorted[0].Distance(xSorted[1]);
                 double d2 = xSorted[0].Distance(xSorted[2]);
@@ -102,11 +103,53 @@ namespace PA2ClosestPair
 
                 Debug.Assert(xSortedL.Count == ySortedL.Count);
                 Debug.Assert(xSortedR.Count == ySortedR.Count);
-                //Pair leftClosestPair = ClosestPair(xSortedL, ySortedL);
-                //Pair rightClosestPair = ClosestPair(xSortedR, ySortedR);
+                Pair leftClosestPair = ClosestPair(xSortedL, ySortedL);
+                Pair rightClosestPair = ClosestPair(xSortedR, ySortedR);
+
+                Pair lrClosestPair = null;
+                if (rightClosestPair.distance < leftClosestPair.distance)
+                {
+                    lrClosestPair = rightClosestPair;
+                }
+                else
+                {
+                    lrClosestPair = leftClosestPair;
+                }
+
+                List<Point> pointsInVertStrip = new List<Point>();
+                foreach (Point point in ySorted)
+                {
+                    if ((point.x >= verticalLineValue - lrClosestPair.distance) && (point.x <= verticalLineValue + lrClosestPair.distance))
+                    {
+                        pointsInVertStrip.Add(point);
+                    }
+                }
+
+                closestPair = FindClosestInStrip(pointsInVertStrip, lrClosestPair);
+                
             }
 
             return closestPair;
+        }
+
+        private static Pair FindClosestInStrip(List<Point> pointsInVertStrip, Pair closestPair)
+        {
+            Pair closestPairInStrip = new Pair(closestPair);
+
+            for ( int i = 0; i < pointsInVertStrip.Count; i++)
+            {
+                Point point = pointsInVertStrip[i];
+                for (int j = i + 1, k = 0; (j < pointsInVertStrip.Count) && (k < 7); j++, k++)
+                {
+                    double distance = point.Distance(pointsInVertStrip[j]);
+                    if (distance < closestPairInStrip.distance)
+                    {
+                        closestPairInStrip.Set(point, pointsInVertStrip[j], distance);
+                    }
+                }
+            }
+
+            return closestPairInStrip;
         }
     }
 }
